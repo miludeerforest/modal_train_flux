@@ -47,10 +47,10 @@ config:
         noise_scheduler: "flowmatch" # For flux, flowmatch must be used
         optimizer: "adamw8bit"
         # For portrait photo training, use a lower learning rate to reduce loss
-        lr: 3e-5  # Further reduce learning rate for smoother loss curves
+        lr: 5e-5  # Slightly increased from 3e-5 to see more noticeable changes in samples
         # Flux may not fully support cosine annealing, switch back to constant_with_warmup
         lr_scheduler: "constant_with_warmup"  # Keep simple scheduler for Flux
-        lr_warmup_steps: 150  # Increase warmup steps
+        lr_warmup_steps: 100  # Reduced from 150 to reach effective learning rate faster
         # uncomment this to skip the pre training sample
 #        skip_first_sample: true
         # uncomment to completely disable sampling
@@ -61,8 +61,8 @@ config:
         # ema will smooth out learning, but could slow it down. Recommended to leave on.
         ema_config:
           use_ema: true
-          # Increase EMA decay value for more stable results
-          ema_decay: 0.998  # Increased from 0.995 to 0.998 for smoother model output
+          # Decrease EMA decay to see more immediate effects of training
+          ema_decay: 0.995  # Decreased from 0.998 to 0.995 for more visible changes
           # Remove potentially incompatible EMA settings
           # ema_update_after_step: 500
           # ema_update_every: 2
@@ -90,7 +90,7 @@ config:
           - "custom_model, full body photo of a person standing outdoors, natural lighting, casual attire, professional photography style, detailed"
           - "custom_model, close-up portrait in soft lighting, neutral background, professional photo style, high resolution, detailed facial features"
         neg: ""  # Flux doesn't use negative prompts
-        seed: 42
+        seed: -1  # Changed from fixed 42 to random seed (-1) for more variation in samples
         walk_seed: true
         guidance_scale: 4
         sample_steps: 28
@@ -99,4 +99,4 @@ meta:
   name: "[name]"
   version: '1.0'
   # Training optimization notes
-  comments: "Configuration optimized for Flux model. Reduced LoRA rank to minimize overfitting, lowered learning rate, maintained required options for Flux, and increased EMA stability."
+  comments: "Configuration optimized for Flux model. Adjusted parameters to show more visible progress in sample images during training."
