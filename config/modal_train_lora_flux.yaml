@@ -28,7 +28,7 @@ config:
         # on windows, escape back slashes with another backslash so
         # "C:\\path\\to\\images\\folder"
         # your dataset must be placed in /ai-toolkit and /root is for modal to find the dir:
-        - folder_path: "/root/ai-toolkit/linyitong_v12"
+        - folder_path: "/root/ai-toolkit/example_dataset"
           caption_ext: "txt"
           caption_dropout_rate: 0.05  # will drop out the caption 5% of time
           shuffle_tokens: false  # shuffle caption order, split by commas
