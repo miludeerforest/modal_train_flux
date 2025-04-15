@@ -2,7 +2,7 @@
 job: extension
 config:
   # this name will be the folder and filename name
-  name: "linyitong_v12"
+  name: "example_model_v1"
   process:
     - type: 'sd_trainer'
       # root folder to save training sessions/samples/weights
@@ -12,7 +12,7 @@ config:
       device: cuda:0
       # if a trigger word is specified, it will be added to captions of training data if it does not already exist
       # alternatively, in your captions you can add [trigger] and it will be replaced with the trigger word
-      trigger_word: "linyitong"
+      trigger_word: "example_person"
       network:
         type: "lora"
         linear: 16
@@ -74,9 +74,9 @@ config:
         width: 1024
         height: 1024
         prompts:
-          - "linyitong, sitting on a chair with a slightly playful expression, her slender legs are accentuated by black stockings and high heels, in a room with natural lighting, professional photograph style, her physique has a well-proportioned silhouette, and her distinct facial features are clearly visible."
-          - "linyitong, seated on a wooden chair in a well-lit room, striking a pose with a soft smile, photographed in a professional portrait style, demonstrating a well-proportioned figure, slender legs, and a noticeable silhouette, her body features consistently highlighted in the photograph, captured with attention to anatomical details, using soft lighting to enhance her physical attributes and complexion, focus on the photographic clarity of her distinctive features."
-          - "linyitong, photographed outdoors in a white bikini top, gazing directly at the camera with a calm expression, slender arms and smooth skin, standing with one hand resting on her head, long black hair cascading down her chest, full bust with a visible cleavage line, natural lighting enhances her soft features, swimsuit highlighting her figure, high-resolution photograph capturing her detailed facial structure and upper body proportions."
+          - "example_person, sitting on a chair with a relaxed expression, wearing professional attire, in a room with natural lighting, professional photograph style, well-proportioned figure, and distinct facial features clearly visible."
+          - "example_person, seated in a well-lit room, with a natural smile, photographed in a professional portrait style, showing good posture and confident pose, using soft lighting to enhance features, high-quality professional photography."
+          - "example_person, photographed outdoors in casual clothing, looking at the camera with a pleasant expression, natural lighting, professional photography capturing detailed facial features and natural pose, high-resolution image with attention to detail."
         neg: ""  # not used on flux
         seed: -1  # 使用随机种子而不是固定种子，以便每次样本有更多变化
         walk_seed: true
