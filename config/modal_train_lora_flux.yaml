@@ -1,0 +1,102 @@
+---
+job: extension
+config:
+  # Name of the training set - This will be used as the folder and file name for training results
+  name: "custom_model_v1"
+  process:
+    - type: 'sd_trainer'
+      # root folder to save training sessions/samples/weights
+      training_folder: "/root/ai-toolkit/modal_output" # must match MOUNT_DIR from run_modal.py
+      # uncomment to see performance stats in the terminal every N steps
+      performance_log_every: 50 # Enable performance logging to monitor loss more frequently
+      device: cuda:0
+      # Lora trigger keyword - Using this keyword in prompts will activate the trained Lora effect
+      # If it's not found in the training data titles, the system will add it automatically
+      # Alternatively, you can add [trigger] in the title, which will be replaced with the trigger word
+      trigger_word: "custom_model"
+      network:
+        type: "lora"
+        linear: 8  # Reduce LoRA rank to prevent overfitting
+        linear_alpha: 8  # Keep the same value as linear
+      save:
+        dtype: float16 # precision to save
+        save_every: 200 # Adjust saving frequency for training data
+        max_step_saves_to_keep: 5 # Increase the number of saved models to select the best one
+      datasets:
+        # datasets are a folder of images. captions need to be txt files with the same name as the image
+        # for instance image2.jpg and image2.txt. Only jpg, jpeg, and png are supported currently
+        # images will automatically be resized and bucketed into the resolution specified
+        # on windows, escape back slashes with another backslash so
+        # "C:\\path\\to\\images\\folder"
+        # Training dataset path - Place your training set here
+        # Your dataset must be placed in /ai-toolkit, /root is the path Modal looks for directories:
+        - folder_path: "/root/ai-toolkit/datasets/custom_dataset"
+          caption_ext: "txt"
+          # For portrait photos, reduce dropout rate to improve annotation consistency
+          caption_dropout_rate: 0.05  # Reduced from 0.10 to 0.05 to reduce annotation variations
+          shuffle_tokens: true  # Enable token shuffling to increase data diversity
+          cache_latents_to_disk: true  # leave this true unless you know what you're doing
+          resolution: [ 512, 768, 1024 ]  # flux enjoys multiple resolutions
+      train:
+        batch_size: 1  # Reduce batch size for more stable training
+        steps: 3500  # Increase total steps to ensure convergence
+        gradient_accumulation_steps: 4  # Increase gradient accumulation steps, equivalent to larger batch size but with less memory usage
+        train_unet: true
+        train_text_encoder: false  # probably won't work with flux
+        gradient_checkpointing: true  # need the on unless you have a ton of vram
+        noise_scheduler: "flowmatch" # For flux, flowmatch must be used
+        optimizer: "adamw8bit"
+        # For portrait photo training, use a lower learning rate to reduce loss
+        lr: 3e-5  # Further reduce learning rate for smoother loss curves
+        # Flux may not fully support cosine annealing, switch back to constant_with_warmup
+        lr_scheduler: "constant_with_warmup"  # Keep simple scheduler for Flux
+        lr_warmup_steps: 150  # Increase warmup steps
+        # uncomment this to skip the pre training sample
+#        skip_first_sample: true
+        # uncomment to completely disable sampling
+#        disable_sampling: true
+        # For Flux, keep default time step settings
+#        linear_timesteps: true  # Flux may not support this
+
+        # ema will smooth out learning, but could slow it down. Recommended to leave on.
+        ema_config:
+          use_ema: true
+          # Increase EMA decay value for more stable results
+          ema_decay: 0.998  # Increased from 0.995 to 0.998 for smoother model output
+          # Remove potentially incompatible EMA settings
+          # ema_update_after_step: 500
+          # ema_update_every: 2
+
+        # will probably need this if gpu supports it for flux, other dtypes may not work correctly
+        dtype: bf16  # Flux requires bf16
+      model:
+        # huggingface model name or path
+        # if you get an error, or get stuck while downloading,
+        # check https://github.com/ostris/ai-toolkit/issues/84, download the model locally and
+        # place it like "/root/ai-toolkit/FLUX.1-dev"
+        # name_or_path: "black-forest-labs/FLUX.1-dev"
+        name_or_path: "/root/FLUX.1-dev"
+        is_flux: true  # Make sure to set this to true
+        quantize: false  # run 8bit mixed precision
+#        low_vram: true  # uncomment this if the GPU is connected to your monitors. It will use less vram to quantize, but is slower.
+      sample:
+        sampler: "flowmatch" # Must match train.noise_scheduler
+        sample_every: 200 # Keep consistent with save frequency
+        width: 1024
+        height: 1024
+        prompts:
+          # Example prompts - Use your trigger keyword for sampling
+          - "custom_model, portrait photo of a person in professional attire, sitting on a chair with a neutral expression, in a well-lit studio setting, high quality, detailed features"
+          - "custom_model, full body photo of a person standing outdoors, natural lighting, casual attire, professional photography style, detailed"
+          - "custom_model, close-up portrait in soft lighting, neutral background, professional photo style, high resolution, detailed facial features"
+        neg: ""  # Flux doesn't use negative prompts
+        seed: 42
+        walk_seed: true
+        guidance_scale: 4
+        sample_steps: 28
+# you can add any additional meta info here. [name] is replaced with config name at top
+meta:
+  name: "[name]"
+  version: '1.0'
+  # Training optimization notes
+  comments: "Configuration optimized for Flux model. Reduced LoRA rank to minimize overfitting, lowered learning rate, maintained required options for Flux, and increased EMA stability."
