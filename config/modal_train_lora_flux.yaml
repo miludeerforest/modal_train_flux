@@ -1,74 +1,63 @@
 ---
 job: extension
 config:
-  # Name of the training set - This will be used as the folder and file name for training results
-  name: "custom_model_v1"
+  # this name will be the folder and filename name
+  name: "linyitong_v4"
   process:
     - type: 'sd_trainer'
       # root folder to save training sessions/samples/weights
       training_folder: "/root/ai-toolkit/modal_output" # must match MOUNT_DIR from run_modal.py
       # uncomment to see performance stats in the terminal every N steps
-      performance_log_every: 50 # Enable performance logging to monitor loss more frequently
+      performance_log_every: 50
       device: cuda:0
-      # Lora trigger keyword - Using this keyword in prompts will activate the trained Lora effect
-      # If it's not found in the training data titles, the system will add it automatically
-      # Alternatively, you can add [trigger] in the title, which will be replaced with the trigger word
-      trigger_word: "custom_model"
+      # if a trigger word is specified, it will be added to captions of training data if it does not already exist
+      # alternatively, in your captions you can add [trigger] and it will be replaced with the trigger word
+      trigger_word: "linyitong"
       network:
         type: "lora"
-        linear: 8  # Reduce LoRA rank to prevent overfitting
-        linear_alpha: 8  # Keep the same value as linear
+        linear: 16
+        linear_alpha: 16
       save:
         dtype: float16 # precision to save
-        save_every: 200 # Adjust saving frequency for training data
-        max_step_saves_to_keep: 5 # Increase the number of saved models to select the best one
+        save_every: 250 # save every this many steps
+        max_step_saves_to_keep: 4 # how many intermittent saves to keep
       datasets:
         # datasets are a folder of images. captions need to be txt files with the same name as the image
         # for instance image2.jpg and image2.txt. Only jpg, jpeg, and png are supported currently
         # images will automatically be resized and bucketed into the resolution specified
         # on windows, escape back slashes with another backslash so
         # "C:\\path\\to\\images\\folder"
-        # Training dataset path - Place your training set here
-        # Your dataset must be placed in /ai-toolkit, /root is the path Modal looks for directories:
-        - folder_path: "/root/ai-toolkit/datasets/custom_dataset"
+        # your dataset must be placed in /ai-toolkit and /root is for modal to find the dir:
+        - folder_path: "/root/ai-toolkit/linyitong_v4"
           caption_ext: "txt"
-          # For portrait photos, reduce dropout rate to improve annotation consistency
-          caption_dropout_rate: 0.05  # Reduced from 0.10 to 0.05 to reduce annotation variations
-          shuffle_tokens: true  # Enable token shuffling to increase data diversity
+          caption_dropout_rate: 0.05  # will drop out the caption 5% of time
+          shuffle_tokens: false  # shuffle caption order, split by commas
           cache_latents_to_disk: true  # leave this true unless you know what you're doing
           resolution: [ 512, 768, 1024 ]  # flux enjoys multiple resolutions
       train:
-        batch_size: 1  # Reduce batch size for more stable training
-        steps: 3500  # Increase total steps to ensure convergence
-        gradient_accumulation_steps: 4  # Increase gradient accumulation steps, equivalent to larger batch size but with less memory usage
+        batch_size: 1
+        steps: 4000  # total number of steps to train 500 - 4000 is a good range
+        gradient_accumulation_steps: 1
         train_unet: true
         train_text_encoder: false  # probably won't work with flux
         gradient_checkpointing: true  # need the on unless you have a ton of vram
-        noise_scheduler: "flowmatch" # For flux, flowmatch must be used
+        noise_scheduler: "flowmatch" # for training only
         optimizer: "adamw8bit"
-        # For portrait photo training, use a lower learning rate to reduce loss
-        lr: 5e-5  # Slightly increased from 3e-5 to see more noticeable changes in samples
-        # Flux may not fully support cosine annealing, switch back to constant_with_warmup
-        lr_scheduler: "constant_with_warmup"  # Keep simple scheduler for Flux
-        lr_warmup_steps: 100  # Reduced from 150 to reach effective learning rate faster
+        lr: 1e-4
         # uncomment this to skip the pre training sample
 #        skip_first_sample: true
         # uncomment to completely disable sampling
 #        disable_sampling: true
-        # For Flux, keep default time step settings
-#        linear_timesteps: true  # Flux may not support this
+        # uncomment to use new vell curved weighting. Experimental but may produce better results
+#        linear_timesteps: true
 
         # ema will smooth out learning, but could slow it down. Recommended to leave on.
         ema_config:
           use_ema: true
-          # Decrease EMA decay to see more immediate effects of training
-          ema_decay: 0.995  # Decreased from 0.998 to 0.995 for more visible changes
-          # Remove potentially incompatible EMA settings
-          # ema_update_after_step: 500
-          # ema_update_every: 2
+          ema_decay: 0.99
 
         # will probably need this if gpu supports it for flux, other dtypes may not work correctly
-        dtype: bf16  # Flux requires bf16
+        dtype: bf16
       model:
         # huggingface model name or path
         # if you get an error, or get stuck while downloading,
@@ -76,21 +65,20 @@ config:
         # place it like "/root/ai-toolkit/FLUX.1-dev"
         # name_or_path: "black-forest-labs/FLUX.1-dev"
         name_or_path: "/root/FLUX.1-dev"
-        is_flux: true  # Make sure to set this to true
+        is_flux: true
         quantize: false  # run 8bit mixed precision
 #        low_vram: true  # uncomment this if the GPU is connected to your monitors. It will use less vram to quantize, but is slower.
       sample:
-        sampler: "flowmatch" # Must match train.noise_scheduler
-        sample_every: 200 # Keep consistent with save frequency
+        sampler: "flowmatch" # must match train.noise_scheduler
+        sample_every: 250 # sample every this many steps
         width: 1024
         height: 1024
         prompts:
-          # Example prompts - Use your trigger keyword for sampling
-          - "custom_model, portrait photo of a person in professional attire, sitting on a chair with a neutral expression, in a well-lit studio setting, high quality, detailed features"
-          - "custom_model, full body photo of a person standing outdoors, natural lighting, casual attire, professional photography style, detailed"
-          - "custom_model, close-up portrait in soft lighting, neutral background, professional photo style, high resolution, detailed facial features"
-        neg: ""  # Flux doesn't use negative prompts
-        seed: -1  # Changed from fixed 42 to random seed (-1) for more variation in samples
+          - "linyitong, sitting on a chair with a slightly playful expression, her slender legs are accentuated by black stockings and high heels, in a room with natural lighting, professional photograph style, her physique has a well-proportioned silhouette, and her distinct facial features are clearly visible."
+          - "linyitong, seated on a wooden chair in a well-lit room, striking a pose with a soft smile, photographed in a professional portrait style, demonstrating a well-proportioned figure, slender legs, and a noticeable silhouette, her body features consistently highlighted in the photograph, captured with attention to anatomical details, using soft lighting to enhance her physical attributes and complexion, focus on the photographic clarity of her distinctive features."
+          - "linyitong, photographed outdoors in a white bikini top, gazing directly at the camera with a calm expression, slender arms and smooth skin, standing with one hand resting on her head, long black hair cascading down her chest, full bust with a visible cleavage line, natural lighting enhances her soft features, swimsuit highlighting her figure, high-resolution photograph capturing her detailed facial structure and upper body proportions."
+        neg: ""  # not used on flux
+        seed: -1  # 使用随机种子而不是固定种子，以便每次样本有更多变化
         walk_seed: true
         guidance_scale: 4
         sample_steps: 28
