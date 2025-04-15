@@ -78,7 +78,7 @@ config:
           - "example_person, seated in a well-lit room, with a natural smile, photographed in a professional portrait style, showing good posture and confident pose, using soft lighting to enhance features, high-quality professional photography."
           - "example_person, photographed outdoors in casual clothing, looking at the camera with a pleasant expression, natural lighting, professional photography capturing detailed facial features and natural pose, high-resolution image with attention to detail."
         neg: ""  # not used on flux
-        seed: -1  # 使用随机种子而不是固定种子，以便每次样本有更多变化
+        seed: 42  # 使用固定种子，确保每次生成的样本保持一致
         walk_seed: true
         guidance_scale: 4
         sample_steps: 28
