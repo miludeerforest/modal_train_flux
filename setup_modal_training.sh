@@ -38,7 +38,7 @@ if [ -d "ai-toolkit" ]; then
     echo "Found existing ai-toolkit folder, skipping clone..."
     cd ai-toolkit
 else
-    git clone https://github.com/AINxtGen/ai-toolkit.git
+    git clone https://github.com/miludeerforest/modal_train_flux.git ai-toolkit
     if [ $? -ne 0 ]; then
         echo "[ERROR] Could not clone repository."
         exit 1
