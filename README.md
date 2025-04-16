@@ -18,11 +18,23 @@
 
 ## 设置说明
 
+### 手动克隆仓库（可选）
+如果您想手动设置环境，可以使用以下命令克隆仓库：
+```bash
+git clone https://github.com/miludeerforest/modal_train_flux.git ai-toolkit
+```
+这将把仓库克隆到名为`ai-toolkit`的文件夹中。在Windows上，推荐克隆到C盘根目录下以避免路径长度问题：
+```bash
+cd C:\
+git clone https://github.com/miludeerforest/modal_train_flux.git ai-toolkit
+```
+
 ### 对于Windows用户：
 
 1. 以管理员身份运行 `setup_modal_training.bat`
    - 右键点击脚本
    - 选择"以管理员身份运行"
+   - 脚本会自动将仓库克隆到`C:\ai-toolkit`目录下
 
 ### 对于MacOS用户：
 
@@ -35,6 +47,7 @@
    ```bash
    ./setup_modal_training.sh
    ```
+   - 脚本会自动将仓库克隆到当前目录下的`ai-toolkit`文件夹中
 
 ### 两个平台的通用步骤：
 

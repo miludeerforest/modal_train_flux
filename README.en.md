@@ -18,11 +18,23 @@ Before starting, make sure you have:
 
 ## Setup Instructions
 
+### Manual Repository Clone (Optional)
+If you want to set up the environment manually, you can clone the repository using:
+```bash
+git clone https://github.com/miludeerforest/modal_train_flux.git ai-toolkit
+```
+This will clone the repository to a folder named `ai-toolkit`. On Windows, it's recommended to clone to C drive root to avoid path length issues:
+```bash
+cd C:\
+git clone https://github.com/miludeerforest/modal_train_flux.git ai-toolkit
+```
+
 ### For Windows Users:
 
 1. Run `setup_modal_training.bat` as Administrator
    - Right-click on the script
    - Select "Run as administrator"
+   - The script will automatically clone the repository to `C:\ai-toolkit` directory
 
 ### For MacOS Users:
 
@@ -35,6 +47,7 @@ Before starting, make sure you have:
    ```bash
    ./setup_modal_training.sh
    ```
+   - The script will automatically clone the repository to an `ai-toolkit` folder in the current directory
 
 ### Common Steps for Both Platforms:
 
