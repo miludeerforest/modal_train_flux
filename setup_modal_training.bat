@@ -160,7 +160,7 @@ if exist "C:\ai-toolkit\" (
 ) else (
     echo Cloning to C:\ai-toolkit to avoid path length issues...
     cd /d C:\
-    git clone https://github.com/AINxtGen/ai-toolkit.git
+    git clone https://github.com/miludeerforest/modal_train_flux.git ai-toolkit
     if %errorlevel% neq 0 (
         echo [ERROR] Could not clone repository.
         pause
