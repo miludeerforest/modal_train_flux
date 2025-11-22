@@ -1,118 +1,44 @@
-# FLUX LoRA训练指南
+# FLUX LoRA 训练快速引导
 
-[English](README.en.md) | 中文
+> 基于 ostris 的 [ai-toolkit](https://github.com/ostris/ai-toolkit) 在 Modal 上适配 FLUX LoRA 训练。文档仅保留必要步骤，避免上传任何私人配置/图片。
 
-> 感谢 ostris 的 [ai-toolkit](https://github.com/ostris/ai-toolkit) 项目，本项目是在其基础上针对Modal上的FLUX LoRA训练进行了优化和改进。
+## 1. 前提条件
+- Windows（建议管理员权限）或 Mac/Linux 终端
+- 账号：Modal、Hugging Face；已在 HF 接受 FLUX.1-dev 许可（如使用）
+- 安装 Git、Python ≥ 3.10
 
-## 视频教程
-[![FLUX LoRA训练教程](https://img.youtube.com/vi/Xjuz92Xmv5w/0.jpg)](https://www.youtube.com/watch?v=Xjuz92Xmv5w)
+## 2. 推荐路径（Windows）
+- 仓库路径建议 `C:\ai-toolkit` 以避免路径过长。
+- 运行脚本：右键 `setup_modal_training.bat` → “以管理员身份运行”。
+- 脚本可：自定义/确认 Python 路径、仓库目录/URL、配置文件路径、是否克隆仓库；Modal 初始化支持浏览器登录或粘贴整行 token 命令。
 
-本指南将帮助您设置在Modal上使用FLUX训练LoRA模型的环境
+## 3. Modal CLI 初始化
+- 浏览器模式：在脚本中选 `M`，或手动执行 `python -m modal setup`。
+- 手动 token 模式：选 `T`，可粘贴整行命令
+  `modal token set --token-id ak-xxx --token-secret as-xxx`
+  或逐项输入 id/secret。
+- 额外令牌（可选）：`python -m modal token new --name flux-training`
 
-## 前提条件
+## 4. 必备文件
+- 配置：`config/modal_train_lora_flux.yaml`（可从 `config/examples/modal/` 拷贝并修改）。
+- 环境：根目录 `.env`，内容示例：`HF_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
+- 训练数据：放在仓库内（例如 `linyaru/`），对应 caption `.txt` 文件同名。
 
-开始前，请确保您有：
-- Windows系统上的管理员权限（对于Windows用户）
-- 已注册 [Modal](https://modal.com) 和 [Hugging Face](https://huggingface.co) 账号
-- 在Hugging Face上接受FLUX.1-dev许可（如果使用）
+## 5. 训练命令（提交到 Modal）
+- 确认 `.env` 和配置文件存在后，脚本会自动调用：
+  `python -m modal run download_model.py`
+  `python -m modal run --detach run_modal.py::main --config-file-list-str=/root/ai-toolkit/config/modal_train_lora_flux.yaml`
+- 手动执行时也请使用 `python -m modal ...` 形式，避免缺少全局 `modal` 可执行文件。
+- 运行状态与日志：Modal 控制台 Apps → `flux-lora-training`。
 
-## 设置说明
+## 6. 常见问题
+- “modal 未找到”：使用 `python -m modal ...`。
+- token 问题：确认 `HF_TOKEN`、Modal token 格式正确；可用脚本手动模式重新写入。
+- 路径/权限：在 Windows 尽量使用管理员；仓库放在短路径（如 `C:\ai-toolkit`）。
 
-### 手动克隆仓库（可选）
-如果您想手动设置环境，可以使用以下命令克隆仓库：
-```bash
-git clone https://github.com/miludeerforest/modal_train_flux.git ai-toolkit
-```
-这将把仓库克隆到名为`ai-toolkit`的文件夹中。在Windows上，推荐克隆到C盘根目录下以避免路径长度问题：
-```bash
-cd C:\
-git clone https://github.com/miludeerforest/modal_train_flux.git ai-toolkit
-```
+## 7. 安全提示
+- 不要将私人数据、图片、token、.env 提交到仓库。
+- 推送前检查 `git status`，仅提交必要代码/配置模板。
 
-### 对于Windows用户：
-
-1. 以管理员身份运行 `setup_modal_training.bat`
-   - 右键点击脚本
-   - 选择"以管理员身份运行"
-   - 脚本会自动将仓库克隆到`C:\ai-toolkit`目录下
-
-### 对于MacOS用户：
-
-1. 打开终端并导航到项目目录
-2. 使脚本可执行：
-   ```bash
-   chmod +x setup_modal_training.sh
-   ```
-3. 运行设置脚本：
-   ```bash
-   ./setup_modal_training.sh
-   ```
-   - 脚本会自动将仓库克隆到当前目录下的`ai-toolkit`文件夹中
-
-### 两个平台的通用步骤：
-
-1. 安装并初始化 Modal CLI（参考官方指南 https://modal.com/docs/guide/apps ）：
-   ```bash
-   pip install --upgrade modal
-   modal setup
-   ```
-   - `modal setup` 会引导你在浏览器中登录并生成默认令牌。
-   - 如果需要为训练单独创建令牌，可运行：
-     ```
-     modal token new --name flux-training
-     ```
-     并按照提示将令牌保存在本地。
-
-2. 准备所需文件：
-   - 配置文件：
-   - 根据您的需求自定义config/file modal_train_lora_flux.yaml中的设置
-   - 环境文件(`.env`)：
-     - 按以下格式添加您的Hugging Face令牌：
-     ```
-     HF_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-     ```
-
-## 安装过程
-
-设置脚本将自动：
-1. 安装必需的软件（如果尚未安装）：
-   - Python 3.10或更高版本
-   - Git（在MacOS上，如果需要可以通过Homebrew安装）
-
-2. 克隆仓库：
-   - Windows：到`C:\ai-toolkit`（以防止路径长度限制）
-   - MacOS：到当前目录
-   
-3. 设置虚拟环境和依赖项
-4. 配置Modal和Hugging Face令牌
-
-## 开始训练
-
-所有文件准备好后，训练过程可通过以下命令提交至 Modal（`::main` 对应 `run_modal.py` 中的 `main` 函数，符合 Modal Docs 的入口约定）：
-```
-modal run --detach run_modal.py::main --config-file-list-str=/root/ai-toolkit/config/modal_train_lora_flux.yaml
-```
-
-训练作业部署后，可在 Modal 控制台的 Apps 页面（https://modal.com/apps ，可通过顶部“Apps”入口访问）中打开 `flux-lora-training` 应用查看实时日志与历史运行记录。
-
-## 故障排除
-
-如果遇到任何问题：
-1. 确保您以管理员身份运行脚本
-2. 检查所有必需的令牌是否正确设置
-3. 验证Python和Git是否正确安装并添加到PATH
-4. 确保所有必需文件都存在且格式正确
-
-## 注意
-
-如果需要重新启动设置过程：
-1. 关闭当前窗口
-2. 打开新的命令提示符或终端
-3. 导航回安装文件夹
-4. 再次以管理员身份运行脚本
-
-## 下载内容
-可以通过以下命令下载训练好的模型（`flux-lora-models` 对应 `run_modal.py` 中创建的 Volume，详情参见 https://modal.com/docs/reference/modal.Volume ）：
-```
-modal volume get flux-lora-models your-model-name
-```
+---
+英文版参见 `README.en.md`。
