@@ -51,14 +51,17 @@ git clone https://github.com/miludeerforest/modal_train_flux.git ai-toolkit
 
 ### Common Steps for Both Platforms:
 
-1. Follow the Modal token setup:
-   - Go to https://modal.com/settings/tokens
-   - Click "New Token"
-   - Copy the command that looks like:
+1. Install and initialize the Modal CLI (see https://modal.com/docs/guide/apps for the latest workflow):
+   ```bash
+   pip install --upgrade modal
+   modal setup
+   ```
+   - `modal setup` opens a browser window for authentication and writes the default API token locally.
+   - If you need a dedicated token for training, run:
      ```
-     modal token set --token-id ak-xxxx --token-secret as-xxxx
+     modal token new --name flux-training
      ```
-   - Paste the command when prompted
+     and follow the prompts to save the credential.
 
 2. Prepare required files:
    - Configuration file:
@@ -85,12 +88,12 @@ The setup script will automatically:
 
 ## Starting Training
 
-Once all files are prepared, the training process will start automatically with:
+Once all files are prepared, launch the training job on Modal with the modern entrypoint syntax (`::main` corresponds to the `main` function in `run_modal.py`):
 ```
-modal run --detach run_modal.py --config-file-list-str=/root/ai-toolkit/config/modal_train_lora_flux.yaml
+modal run --detach run_modal.py::main --config-file-list-str=/root/ai-toolkit/config/modal_train_lora_flux.yaml
 ```
 
-You can monitor the training progress and logs at: https://modal.com/logs
+After deployment, monitor logs and historical runs from the Modal dashboard under Apps (https://modal.com/apps, accessible via the “Apps” link in the top navigation) and open the `flux-lora-training` app to inspect live output.
 
 ## Troubleshooting
 
@@ -109,7 +112,7 @@ If you need to restart the setup process:
 4. Run the script again as Administrator
 
 ## Download Content
-You can download the trained model by running the following command:
+Download trained checkpoints from the configured volume (see https://modal.com/docs/reference/modal.Volume ):
 ```
 modal volume get flux-lora-models your-model-name
-``` 
+```

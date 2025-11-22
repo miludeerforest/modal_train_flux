@@ -49,40 +49,27 @@ fi
 echo "[2/6] Updating submodules..."
 git submodule update --init --recursive
 
-echo "[3/6] Creating virtual environment..."
+echo "[3/7] Creating virtual environment..."
 python3 -m venv venv
 source venv/bin/activate
 
-echo "[4/6] Installing Modal..."
-pip install modal
+echo "[4/7] Installing/Upgrading Modal CLI..."
+pip install --upgrade modal
 
-echo "[5/6] Installing required dependencies..."
+echo "[5/7] Installing required dependencies..."
 pip install python-dotenv huggingface_hub oyaml
 
-echo "[6/6] Setting up Modal..."
+echo "[6/7] Running 'modal setup' (see https://modal.com/docs/guide/apps)..."
 echo "============================================================"
-echo "How to set up Modal token:"
-echo "1. Go to https://modal.com/settings/tokens"
-echo "2. Click 'New Token'"
-echo "3. Copy the command that looks like:"
-echo "   modal token set --token-id ak-xxxx --token-secret as-xxxx"
-echo "4. Paste the command here and press Enter"
+echo "modal setup will open a browser for authentication."
+echo "Afterwards, run 'modal token new --name flux-training' if you need an extra token."
 echo "============================================================"
-echo
-
-read -p "Paste Modal token command: " MODAL_CMD
-echo
-echo "Executing token command..."
-eval "$MODAL_CMD"
-if [ $? -ne 0 ]; then
-    echo "[ERROR] Failed to set Modal token. Please try again."
+modal setup || {
+    echo "[ERROR] modal setup failed. Please rerun after fixing the issue."
     exit 1
-fi
-
-echo "Modal token set successfully!"
+}
+echo "Modal CLI initialized successfully!"
 echo
-
-source venv/bin/activate
 
 echo "=== Next Steps ==="
 echo "Required files to prepare:"
@@ -144,5 +131,5 @@ modal run --detach run_modal.py::main --config-file-list-str=/root/ai-toolkit/co
 
 echo
 echo "Training process has started!"
-echo "You can monitor the training progress and logs at: https://modal.com/logs"
+echo "Open https://modal.com/apps and select flux-lora-training to inspect logs."
 echo 

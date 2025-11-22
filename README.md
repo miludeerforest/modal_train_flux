@@ -51,14 +51,17 @@ git clone https://github.com/miludeerforest/modal_train_flux.git ai-toolkit
 
 ### 两个平台的通用步骤：
 
-1. 按照Modal令牌设置：
-   - 访问 https://modal.com/settings/tokens
-   - 点击"New Token"
-   - 复制类似如下的命令：
+1. 安装并初始化 Modal CLI（参考官方指南 https://modal.com/docs/guide/apps ）：
+   ```bash
+   pip install --upgrade modal
+   modal setup
+   ```
+   - `modal setup` 会引导你在浏览器中登录并生成默认令牌。
+   - 如果需要为训练单独创建令牌，可运行：
      ```
-     modal token set --token-id ak-xxxx --token-secret as-xxxx
+     modal token new --name flux-training
      ```
-   - 在提示时粘贴命令
+     并按照提示将令牌保存在本地。
 
 2. 准备所需文件：
    - 配置文件：
@@ -85,12 +88,12 @@ git clone https://github.com/miludeerforest/modal_train_flux.git ai-toolkit
 
 ## 开始训练
 
-所有文件准备好后，训练过程将通过以下命令自动启动：
+所有文件准备好后，训练过程可通过以下命令提交至 Modal（`::main` 对应 `run_modal.py` 中的 `main` 函数，符合 Modal Docs 的入口约定）：
 ```
-modal run --detach run_modal.py --config-file-list-str=/root/ai-toolkit/config/modal_train_lora_flux.yaml
+modal run --detach run_modal.py::main --config-file-list-str=/root/ai-toolkit/config/modal_train_lora_flux.yaml
 ```
 
-您可以在以下位置监控训练进度和日志：https://modal.com/logs
+训练作业部署后，可在 Modal 控制台的 Apps 页面（https://modal.com/apps ，可通过顶部“Apps”入口访问）中打开 `flux-lora-training` 应用查看实时日志与历史运行记录。
 
 ## 故障排除
 
@@ -109,7 +112,7 @@ modal run --detach run_modal.py --config-file-list-str=/root/ai-toolkit/config/m
 4. 再次以管理员身份运行脚本
 
 ## 下载内容
-可以通过运行以下命令下载训练好的模型：
+可以通过以下命令下载训练好的模型（`flux-lora-models` 对应 `run_modal.py` 中创建的 Volume，详情参见 https://modal.com/docs/reference/modal.Volume ）：
 ```
 modal volume get flux-lora-models your-model-name
 ```

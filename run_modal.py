@@ -1,8 +1,8 @@
 '''
 
 ostris/ai-toolkit on https://modal.com
-Run training with the following command:
-modal run run_modal.py --config-file-list-str=/root/ai-toolkit/config/whatever_you_want.yml
+Run training with the following command (Modal CLI 2025 syntax):
+modal run run_modal.py::main --config-file-list-str=/root/ai-toolkit/config/whatever_you_want.yml
 
 '''
 
@@ -21,7 +21,7 @@ sys.path.insert(0, "/root/ai-toolkit")
 # turn off diffusers telemetry until I can figure out how to make it opt-in
 os.environ['DISABLE_TELEMETRY'] = 'YES'
 
-# define the volume for storing model outputs, using "creating volumes lazily": https://modal.com/docs/guide/volumes
+# define the volume for storing model outputs, using "creating volumes lazily": https://modal.com/docs/reference/modal.Volume
 # you will find your model, samples and optimizer stored in: https://modal.com/storage/your-username/main/flux-lora-models
 model_volume = modal.Volume.from_name("flux-lora-models", create_if_missing=True)
 

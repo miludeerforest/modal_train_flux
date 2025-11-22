@@ -1,5 +1,13 @@
 @echo off
 setlocal enabledelayedexpansion
+set "PYTHON_EXE=C:\Users\sxm2\scoop\apps\miniforge\python.exe"
+
+if not exist "%PYTHON_EXE%" (
+    echo [ERROR] Miniforge python.exe not found at %PYTHON_EXE%
+    echo Please install Miniforge or update the PYTHON_EXE path inside setup_modal_training.bat.
+    pause
+    exit /b 1
+)
 
 REM Check for admin privileges
 net session >nul 2>&1
@@ -47,101 +55,10 @@ if /i not "%CONTINUE%"=="Y" (
 )
 echo.
 
-REM Check and install Python if needed
-python --version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Python not found. Downloading Python 3.10...
-    echo.
-    
-    REM Download Python 3.10 installer
-    curl -L -o python_installer.exe https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe
-    
-    if %errorlevel% neq 0 (
-        echo [ERROR] Failed to download Python installer.
-        echo Please download and install Python 3.10 manually from: https://www.python.org/downloads/
-        pause
-        exit /b 1
-    )
-    
-    echo Installing Python 3.10...
-    echo NOTE: Please ensure you check "Add Python to PATH" during installation
-    python_installer.exe /quiet InstallAllUsers=1 PrependPath=1
-    
-    if %errorlevel% neq 0 (
-        echo [ERROR] Python installation failed.
-        del python_installer.exe
-        pause
-        exit /b 1
-    )
-    
-    del python_installer.exe
-    echo Python 3.10 installed successfully!
-    echo.
-    set NEED_RESTART=1
-)
-
-REM Check and install Git if needed
+REM Check git availability up front
 git --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Git not found. Downloading Git...
-    echo.
-    
-    REM Download Git installer
-    curl -L -o git_installer.exe https://github.com/git-for-windows/git/releases/download/v2.42.0.windows.2/Git-2.42.0.2-64-bit.exe
-    
-    if %errorlevel% neq 0 (
-        echo [ERROR] Failed to download Git installer.
-        echo Please download and install Git manually from: https://git-scm.com/downloads
-        pause
-        exit /b 1
-    )
-    
-    echo Installing Git...
-    git_installer.exe /VERYSILENT /NORESTART
-    
-    if %errorlevel% neq 0 (
-        echo [ERROR] Git installation failed.
-        del git_installer.exe
-        pause
-        exit /b 1
-    )
-    
-    del git_installer.exe
-    echo Git installed successfully!
-    echo.
-    set NEED_RESTART=1
-)
-
-REM Check if restart is needed
-if defined NEED_RESTART (
-    echo ============================================================
-    echo IMPORTANT:
-    echo You need to restart this script for the changes to take effect.
-    echo.
-    echo 1. Close this window
-    echo 2. Open a new Command Prompt or Terminal
-    echo 3. Navigate back to this folder
-    echo 4. Run this script again
-    echo ============================================================
-    pause
-    exit /b 0
-)
-
-
-REM Check if Python is installed
-python --version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo [ERROR] Python is not installed. Please install Python 3.10 or higher.
-    echo Download Python at: https://www.python.org/downloads/
-    pause
-    exit /b 1
-)
-
-REM Check if git is installed
-git --version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo [ERROR] Git is not installed. Please install Git.
-    echo Download Git at: https://git-scm.com/downloads
+    echo [ERROR] Git is not installed or not in PATH. Please install Git first: https://git-scm.com/downloads
     pause
     exit /b 1
 )
@@ -172,50 +89,29 @@ if exist "C:\ai-toolkit\" (
 echo [3/6] Updating submodules...
 git submodule update --init --recursive
 
-echo [4/6] Creating virtual environment...
-python -m venv venv
+echo [4/7] Creating virtual environment...
+"C:\Users\sxm2\scoop\apps\miniforge\python.exe" -m venv venv
 call venv\Scripts\activate
 
-echo [5/6] Installing Modal...
-pip install modal
+echo [5/7] 安装/升级 Modal CLI...
+"C:\Users\sxm2\scoop\apps\miniforge\python.exe" -m pip install --upgrade modal
 
-echo [6/6] Installing required dependencies...
-pip install python-dotenv huggingface_hub oyaml
+echo [6/7] 安装项目依赖...
+"C:\Users\sxm2\scoop\apps\miniforge\python.exe" -m pip install python-dotenv huggingface_hub oyaml
 
-echo [6/6] Setting up Modal...
+echo [7/7] 初始化 Modal CLI（参考 https://modal.com/docs/guide/apps ）...
 echo ============================================================
-echo How to set up Modal token:
-echo 1. Go to https://modal.com/settings/tokens
-echo 2. Click "New Token"
-echo 3. Copy the command that looks like:
-echo    modal token set --token-id ak-xxxx --token-secret as-xxxx
-echo 4. Right-click in this window to paste the command then press Enter
+echo 将执行 "modal setup"。请按提示在浏览器中登录 Modal，写入默认令牌。
+echo 如需额外令牌，可在完成后运行:
+echo   modal token new --name flux-training
 echo ============================================================
-echo.
-
-:GET_TOKEN
-set /p MODAL_CMD="Paste Modal token command: "
-
-REM Check if the command format is correct
-echo %MODAL_CMD% | findstr /r /c:"^modal token set --token-id .* --token-secret .*" >nul
-if %errorlevel% neq 0 (
-    echo [ERROR] Invalid token format. Command should look like:
-    echo modal token set --token-id ak-xxxx --token-secret as-xxxx
-    echo Please try again.
-    echo.
-    goto GET_TOKEN
+modal setup || (
+    echo [ERROR] modal setup 失败，请排查后重试。
+    pause
+    exit /b 1
 )
-
+echo Modal CLI 初始化完成！
 echo.
-echo Executing token command...
-%MODAL_CMD%
-if %errorlevel% neq 0 (
-    echo [ERROR] Failed to set Modal token. Please try again.
-    goto GET_TOKEN
-)
-echo Modal token set successfully!
-echo.
-call venv\Scripts\activate
 echo === Next Steps ===
 echo Required files to prepare:
 echo 1. Configuration file:
@@ -288,6 +184,6 @@ modal run --detach run_modal.py::main --config-file-list-str=/root/ai-toolkit/co
 )
 echo.
 echo Training process has started!
-echo You can monitor the training progress and logs at: https://modal.com/logs
+echo 打开 https://modal.com/apps ，在 “Apps” 中找到 flux-lora-training 查看日志与运行状态。
 echo.
 pause
