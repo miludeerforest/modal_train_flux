@@ -36,7 +36,15 @@
 - token 问题：确认 `HF_TOKEN`、Modal token 格式正确；可用脚本手动模式重新写入。
 - 路径/权限：在 Windows 尽量使用管理员；仓库放在短路径（如 `C:\ai-toolkit`）。
 
-## 7. 安全提示
+## 7. 下载已训练模型
+- 将模型从 Modal Volume 下载到本地（示例路径为 ComfyUI LoRA 目录）：
+  ```powershell
+  python -m modal volume get flux-lora-models linyaru_v1/linyaru_v1.safetensors F:\env\ComfyUI\models\loras
+  ```
+- 按需替换模型名与目标路径；如未激活虚拟环境，可用脚本同款 Python 路径执行：
+  `C:\Users\sxm2\scoop\apps\miniforge\25.9.1-0\python.exe -m modal volume get ...`
+
+## 8. 安全提示
 - 不要将私人数据、图片、token、.env 提交到仓库。
 - 推送前检查 `git status`，仅提交必要代码/配置模板。
 
