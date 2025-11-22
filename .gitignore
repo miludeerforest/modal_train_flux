@@ -1,7 +1,7 @@
 .env
-datasets/
-linyitong_v10/
-linyitong_v11/
+AGENTS.md
+linyaru/
+log.txt
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -179,4 +179,6 @@ cython_debug/
 /wandb
 .vscode/settings.json
 .DS_Store
-._.DS_Store
+._.DS_Storedatasets/
+linyitong_v10/
+linyitong_v11/
